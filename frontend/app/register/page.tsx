@@ -1,6 +1,59 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authAPI } from "@/lib/api";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (formData.password !== formData.password_confirmation) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await authAPI.register(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.password_confirmation
+      );
+      if (response.success && response.data.token) {
+        localStorage.setItem("auth_token", response.data.token);
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message || err.message || "Registration failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-md w-full">
@@ -18,7 +71,12 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-white py-8 px-6 shadow-xl rounded-lg">
-          <form className="space-y-6" action="#" method="POST">
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 Full Name
@@ -30,6 +88,8 @@ export default function RegisterPage() {
                   type="text"
                   autoComplete="name"
                   required
+                  value={formData.name}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="John Doe"
                 />
@@ -47,6 +107,8 @@ export default function RegisterPage() {
                   type="email"
                   autoComplete="email"
                   required
+                  value={formData.email}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="you@example.com"
                 />
@@ -64,6 +126,8 @@ export default function RegisterPage() {
                   type="password"
                   autoComplete="new-password"
                   required
+                  value={formData.password}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="••••••••"
                 />
@@ -80,10 +144,12 @@ export default function RegisterPage() {
               <div className="mt-1">
                 <input
                   id="confirm-password"
-                  name="confirm-password"
+                  name="password_confirmation"
                   type="password"
                   autoComplete="new-password"
                   required
+                  value={formData.password_confirmation}
+                  onChange={handleChange}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="••••••••"
                 />
@@ -111,12 +177,13 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <Link
-                href="/dashboard"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition"
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
-              </Link>
+                {loading ? "Creating Account..." : "Create Account"}
+              </button>
             </div>
           </form>
         </div>
@@ -124,4 +191,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
