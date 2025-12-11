@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\PaymentMethod;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -113,17 +115,79 @@ class AuthController extends Controller
      */
     public function billing(Request $request)
     {
-        // This is a placeholder - implement actual billing logic
+        $user = $request->user();
+        
+        // Get active payment/package
+        $activePayment = Payment::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->with('package')
+            ->latest()
+            ->first();
+
+        // Get payment methods
+        $paymentMethods = PaymentMethod::where('user_id', $user->id)
+            ->orderBy('is_primary', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get billing history
+        $billingHistory = Payment::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->with('package')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($payment) {
+                return [
+                    'id' => $payment->id,
+                    'date' => $payment->created_at->toDateString(),
+                    'description' => $payment->package ? $payment->package->name : 'Payment',
+                    'amount' => $payment->amount,
+                    'status' => $payment->status,
+                ];
+            });
+
         return response()->json([
             'success' => true,
             'data' => [
-                'current_plan' => 'Professional',
-                'amount' => 19.99,
-                'currency' => 'USD',
-                'next_billing_date' => now()->addMonth()->format('Y-m-d'),
-                'billing_history' => [],
+                'current_plan' => $activePayment && $activePayment->package 
+                    ? $activePayment->package->name 
+                    : 'No active plan',
+                'amount' => $activePayment ? $activePayment->amount : 0,
+                'currency' => $activePayment ? $activePayment->currency : 'USD',
+                'next_billing_date' => $activePayment 
+                    ? now()->addMonth()->format('Y-m-d')
+                    : null,
+                'billing_history' => $billingHistory,
+                'payment_methods' => $paymentMethods->map(function ($method) {
+                    return [
+                        'id' => $method->id,
+                        'type' => $method->type,
+                        'card_type' => $method->card_type,
+                        'last_four' => $method->last_four,
+                        'exp_month' => $method->exp_month,
+                        'exp_year' => $method->exp_year,
+                        'holder_name' => $method->holder_name,
+                        'is_primary' => $method->is_primary,
+                        'display' => $this->formatCardDisplay($method),
+                    ];
+                }),
             ],
         ]);
+    }
+
+    /**
+     * Format card for display
+     */
+    private function formatCardDisplay($paymentMethod)
+    {
+        $cardType = ucfirst($paymentMethod->card_type ?? 'Card');
+        $lastFour = $paymentMethod->last_four;
+        $exp = $paymentMethod->exp_month && $paymentMethod->exp_year 
+            ? $paymentMethod->exp_month . '/' . substr($paymentMethod->exp_year, -2)
+            : 'N/A';
+
+        return "{$cardType} •••• {$lastFour} • Expires {$exp}";
     }
 }
 

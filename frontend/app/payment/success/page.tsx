@@ -1,13 +1,17 @@
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export default function PaymentSuccessPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen gradient-green-light flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-lg shadow-xl p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 text-center border border-primary-100">
+          <div className="mb-6">
+            <Logo />
+          </div>
+          <div className="w-20 h-20 gradient-green rounded-full flex items-center justify-center mx-auto mb-6">
             <svg
-              className="w-8 h-8 text-green-600"
+              className="w-10 h-10 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -22,18 +26,18 @@ export default function PaymentSuccessPage() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
           <p className="text-gray-600 mb-8">
-            Thank you for your payment. Your transaction has been completed successfully.
+            Your investment plan has been activated successfully. Start investing, saving, and earning today!
           </p>
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="bg-primary-50 rounded-lg p-4 mb-6 border border-primary-200">
             <div className="text-sm text-gray-600 mb-1">Transaction ID</div>
-            <div className="font-mono text-sm font-semibold text-gray-900">
+            <div className="font-mono text-sm font-semibold text-primary-700">
               TXN-2024-0123456789
             </div>
           </div>
           <div className="space-y-3">
             <Link
               href="/dashboard"
-              className="block w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition"
+              className="block w-full gradient-green text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition shadow-md"
             >
               Go to Dashboard
             </Link>
@@ -49,4 +53,3 @@ export default function PaymentSuccessPage() {
     </div>
   );
 }
-
