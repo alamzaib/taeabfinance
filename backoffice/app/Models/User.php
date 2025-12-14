@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'referred_by',
     ];
 
     /**
@@ -46,5 +47,25 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function referredBy()
+    {
+        return $this->belongsTo(User::class, 'referred_by');
+    }
+
+    public function referrals()
+    {
+        return $this->hasMany(User::class, 'referred_by');
+    }
+
+    public function affiliateLink()
+    {
+        return $this->hasOne(AffiliateLink::class);
+    }
+
+    public function commissions()
+    {
+        return $this->hasMany(AffiliateCommission::class, 'referrer_id');
     }
 }

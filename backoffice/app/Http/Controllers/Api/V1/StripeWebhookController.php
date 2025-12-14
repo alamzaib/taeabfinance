@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\AffiliateCommission;
+use App\Models\AffiliateConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\Stripe;
@@ -86,6 +88,9 @@ class StripeWebhookController extends Controller
                 $payment->update(['stripe_customer_id' => $session->customer]);
             }
 
+            // Generate affiliate commission if user was referred
+            $this->generateAffiliateCommission($payment);
+
             Log::info('Stripe webhook: Payment completed', [
                 'payment_id' => $payment->id,
                 'transaction_id' => $payment->transaction_id,
@@ -122,6 +127,9 @@ class StripeWebhookController extends Controller
                     'payment_id' => $payment->id,
                     'payment_intent_id' => $paymentIntent->id,
                 ]);
+
+                // Generate affiliate commission if user was referred
+                $this->generateAffiliateCommission($payment);
             }
         } catch (\Exception $e) {
             Log::error('Stripe webhook: Error handling payment intent succeeded', [
@@ -159,6 +167,74 @@ class StripeWebhookController extends Controller
             Log::error('Stripe webhook: Error handling payment intent failed', [
                 'error' => $e->getMessage(),
                 'payment_intent_id' => $paymentIntent->id,
+            ]);
+        }
+    }
+
+    /**
+     * Generate affiliate commission for completed payment
+     */
+    protected function generateAffiliateCommission(Payment $payment)
+    {
+        try {
+            $user = $payment->user;
+            
+            // Check if user was referred
+            if (!$user->referred_by) {
+                return;
+            }
+
+            // Get commission configuration
+            $commissionRate = (float) AffiliateConfig::getValue('commission_rate', 10);
+            $commissionType = AffiliateConfig::getValue('commission_type', 'percentage');
+            $minPayment = (float) AffiliateConfig::getValue('min_payment_for_commission', 0);
+
+            // Check minimum payment threshold
+            if ($payment->amount < $minPayment) {
+                return;
+            }
+
+            // Calculate commission
+            $commissionAmount = 0;
+            if ($commissionType === 'percentage') {
+                $commissionAmount = ($payment->amount * $commissionRate) / 100;
+            } else {
+                $commissionAmount = (float) AffiliateConfig::getValue('fixed_commission_amount', 0);
+            }
+
+            // Only create commission if amount is positive and commission doesn't already exist
+            if ($commissionAmount > 0) {
+                // Check if commission already exists for this payment
+                $existingCommission = AffiliateCommission::where('payment_id', $payment->id)->first();
+                
+                if (!$existingCommission) {
+                    AffiliateCommission::create([
+                        'referrer_id' => $user->referred_by,
+                        'referred_id' => $user->id,
+                        'payment_id' => $payment->id,
+                        'commission_amount' => $commissionAmount,
+                        'commission_type' => $commissionType,
+                        'commission_rate' => $commissionType === 'percentage' ? $commissionRate : null,
+                        'status' => 'pending',
+                    ]);
+
+                    Log::info('Affiliate commission created', [
+                        'referrer_id' => $user->referred_by,
+                        'referred_id' => $user->id,
+                        'payment_id' => $payment->id,
+                        'commission_amount' => $commissionAmount,
+                    ]);
+                } else {
+                    Log::info('Affiliate commission already exists for payment', [
+                        'payment_id' => $payment->id,
+                        'commission_id' => $existingCommission->id,
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Error generating affiliate commission', [
+                'error' => $e->getMessage(),
+                'payment_id' => $payment->id,
             ]);
         }
     }

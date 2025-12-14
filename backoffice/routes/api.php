@@ -32,10 +32,18 @@ Route::prefix('v1')->group(function () {
         // Earnings
         Route::get('/earnings', [\App\Http\Controllers\Api\V1\EarningController::class, 'index']);
         Route::get('/earnings/history', [\App\Http\Controllers\Api\V1\EarningController::class, 'history']);
-            Route::get('/earnings/export', [\App\Http\Controllers\Api\V1\EarningController::class, 'export']);
+        Route::get('/earnings/export', [\App\Http\Controllers\Api\V1\EarningController::class, 'export']);
+        
+        // Affiliate
+        Route::get('/affiliate/link', [\App\Http\Controllers\Api\V1\AffiliateController::class, 'getLink']);
+        Route::get('/affiliate/commissions', [\App\Http\Controllers\Api\V1\AffiliateController::class, 'getCommissions']);
+        Route::get('/affiliate/stats', [\App\Http\Controllers\Api\V1\AffiliateController::class, 'getStats']);
         });
-    });
+    
+    // Public affiliate tracking (no authentication required)
+    Route::post('/affiliate/track-click', [\App\Http\Controllers\Api\V1\AffiliateController::class, 'trackClick']);
 
     // Stripe Webhook (no authentication required)
     Route::post('/stripe/webhook', [\App\Http\Controllers\Api\V1\StripeWebhookController::class, 'handle']);
+});
 

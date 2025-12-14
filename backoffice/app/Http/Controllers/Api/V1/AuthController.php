@@ -56,13 +56,41 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'ref' => 'nullable|string', // Referral code
         ]);
+
+        // Find referrer if ref code provided
+        $referredBy = null;
+        $refCode = $request->input('ref');
+        if ($refCode) {
+            $affiliateLink = \App\Models\AffiliateLink::where('affiliate_code', $refCode)->first();
+            if ($affiliateLink && $affiliateLink->active) {
+                $referredBy = $affiliateLink->user_id;
+                // Increment signups
+                $affiliateLink->increment('signups');
+                
+                \Log::info('Affiliate registration', [
+                    'ref_code' => $refCode,
+                    'referrer_id' => $referredBy,
+                    'new_user_email' => $request->email,
+                ]);
+            } else {
+                \Log::warning('Invalid affiliate code used for registration', [
+                    'ref_code' => $refCode,
+                    'email' => $request->email,
+                ]);
+            }
+        }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'referred_by' => $referredBy,
         ]);
+
+        // Create affiliate link for new user
+        $this->createAffiliateLink($user);
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -78,6 +106,21 @@ class AuthController extends Controller
                 'token' => $token,
             ],
         ], 201);
+    }
+
+    /**
+     * Create affiliate link for user
+     */
+    private function createAffiliateLink(User $user)
+    {
+        $code = \App\Models\AffiliateLink::generateCode($user->id);
+        $link = \App\Models\AffiliateLink::generateLink($code);
+
+        \App\Models\AffiliateLink::create([
+            'user_id' => $user->id,
+            'affiliate_code' => $code,
+            'affiliate_link' => $link,
+        ]);
     }
 
     /**

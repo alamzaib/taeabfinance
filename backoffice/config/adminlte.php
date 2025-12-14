@@ -333,11 +333,33 @@ return [
             'icon' => 'fas fa-fw fa-box',
         ],
         ['header' => 'FINANCIAL'],
-        [
-            'text' => 'Payments',
-            'url' => '/backoffice/payments',
-            'icon' => 'fas fa-fw fa-credit-card',
-        ],
+            [
+                'text' => 'Payments',
+                'url' => '/backoffice/payments',
+                'icon' => 'fas fa-fw fa-credit-card',
+            ],
+            [
+                'text' => 'Affiliates',
+                'url' => '/backoffice/affiliates',
+                'icon' => 'fas fa-fw fa-users',
+                'submenu' => [
+                    [
+                        'text' => 'Affiliate Links',
+                        'url' => '/backoffice/affiliates',
+                        'icon' => 'fas fa-fw fa-link',
+                    ],
+                    [
+                        'text' => 'Commissions',
+                        'url' => '/backoffice/affiliates/commissions',
+                        'icon' => 'fas fa-fw fa-dollar-sign',
+                    ],
+                    [
+                        'text' => 'Configuration',
+                        'url' => '/backoffice/affiliates/config',
+                        'icon' => 'fas fa-fw fa-cog',
+                    ],
+                ],
+            ],
         [
             'text' => 'Refund Requests',
             'url' => '/backoffice/refunds',

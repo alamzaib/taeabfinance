@@ -68,6 +68,14 @@ Route::prefix('backoffice')->group(function () {
         
         // Analytics
         Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+        
+        // Affiliates
+        Route::get('affiliates', [\App\Http\Controllers\Admin\AffiliateController::class, 'index'])->name('affiliates.index');
+        Route::get('affiliates/commissions', [\App\Http\Controllers\Admin\AffiliateController::class, 'commissions'])->name('affiliates.commissions');
+        Route::get('affiliates/config', [\App\Http\Controllers\Admin\AffiliateController::class, 'config'])->name('affiliates.config');
+        Route::post('affiliates/config', [\App\Http\Controllers\Admin\AffiliateController::class, 'updateConfig'])->name('affiliates.config.update');
+        Route::post('affiliates/commissions/{commission}/update-status', [\App\Http\Controllers\Admin\AffiliateController::class, 'updateCommissionStatus'])->name('affiliates.commissions.update-status');
+        Route::post('affiliates/links/{affiliateLink}/toggle-status', [\App\Http\Controllers\Admin\AffiliateController::class, 'toggleLinkStatus'])->name('affiliates.links.toggle-status');
     });
 });
 

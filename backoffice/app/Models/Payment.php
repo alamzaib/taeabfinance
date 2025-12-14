@@ -45,4 +45,9 @@ class Payment extends Model
     {
         return $this->hasMany(RefundRequest::class);
     }
+
+    public function commissions()
+    {
+        return $this->hasMany(AffiliateCommission::class);
+    }
 }
