@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SupportTicketController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\EarningController;
 
 // Admin Authentication Routes
 Route::prefix('backoffice')->group(function () {
@@ -76,6 +77,15 @@ Route::prefix('backoffice')->group(function () {
         Route::post('affiliates/config', [\App\Http\Controllers\Admin\AffiliateController::class, 'updateConfig'])->name('affiliates.config.update');
         Route::post('affiliates/commissions/{commission}/update-status', [\App\Http\Controllers\Admin\AffiliateController::class, 'updateCommissionStatus'])->name('affiliates.commissions.update-status');
         Route::post('affiliates/links/{affiliateLink}/toggle-status', [\App\Http\Controllers\Admin\AffiliateController::class, 'toggleLinkStatus'])->name('affiliates.links.toggle-status');
+        
+        // Earnings
+        Route::get('earnings', [EarningController::class, 'index'])->name('earnings.index');
+        Route::get('earnings/{earning}', [EarningController::class, 'show'])->name('earnings.show');
+        Route::post('earnings', [EarningController::class, 'store'])->name('earnings.store');
+        Route::get('earnings/{earning}/edit', [EarningController::class, 'edit'])->name('earnings.edit');
+        Route::put('earnings/{earning}', [EarningController::class, 'update'])->name('earnings.update');
+        Route::delete('earnings/{earning}', [EarningController::class, 'destroy'])->name('earnings.destroy');
+        Route::get('earnings/export/data', [EarningController::class, 'export'])->name('earnings.export');
     });
 });
 

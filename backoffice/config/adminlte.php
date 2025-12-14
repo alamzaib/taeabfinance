@@ -339,6 +339,11 @@ return [
                 'icon' => 'fas fa-fw fa-credit-card',
             ],
             [
+                'text' => 'Earnings',
+                'url' => '/backoffice/earnings',
+                'icon' => 'fas fa-fw fa-money-bill-wave',
+            ],
+            [
                 'text' => 'Affiliates',
                 'url' => '/backoffice/affiliates',
                 'icon' => 'fas fa-fw fa-users',
