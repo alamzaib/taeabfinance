@@ -68,6 +68,73 @@ class AffiliateController extends Controller
     }
 
     /**
+     * Show affiliate link details
+     */
+    public function showLink(AffiliateLink $affiliateLink, Request $request)
+    {
+        $affiliateLink->load('user');
+        
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'affiliateLink' => [
+                        'id' => $affiliateLink->id,
+                        'user_id' => $affiliateLink->user_id,
+                        'user_name' => $affiliateLink->user->name ?? 'N/A',
+                        'user_email' => $affiliateLink->user->email ?? 'N/A',
+                        'affiliate_code' => $affiliateLink->affiliate_code,
+                        'affiliate_link' => $affiliateLink->affiliate_link,
+                        'clicks' => $affiliateLink->clicks ?? 0,
+                        'signups' => $affiliateLink->signups ?? 0,
+                        'active' => $affiliateLink->active ?? true,
+                        'created_at' => $affiliateLink->created_at->format('Y-m-d H:i:s'),
+                        'updated_at' => $affiliateLink->updated_at->format('Y-m-d H:i:s'),
+                    ]
+                ]
+            ]);
+        }
+
+        return view('admin.affiliates.show', compact('affiliateLink'));
+    }
+
+    /**
+     * Show commission details
+     */
+    public function showCommission(AffiliateCommission $commission, Request $request)
+    {
+        $commission->load(['referrer', 'referred', 'payment']);
+        
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'commission' => [
+                        'id' => $commission->id,
+                        'referrer_id' => $commission->referrer_id,
+                        'referrer_name' => $commission->referrer->name ?? 'N/A',
+                        'referrer_email' => $commission->referrer->email ?? 'N/A',
+                        'referred_id' => $commission->referred_id,
+                        'referred_name' => $commission->referred->name ?? 'N/A',
+                        'referred_email' => $commission->referred->email ?? 'N/A',
+                        'payment_id' => $commission->payment_id,
+                        'payment_amount' => $commission->payment ? (float) $commission->payment->amount : null,
+                        'commission_type' => $commission->commission_type,
+                        'commission_rate' => $commission->commission_rate ? (float) $commission->commission_rate : null,
+                        'commission_amount' => (float) $commission->commission_amount,
+                        'status' => $commission->status,
+                        'paid_at' => $commission->paid_at ? $commission->paid_at->format('Y-m-d H:i:s') : null,
+                        'created_at' => $commission->created_at->format('Y-m-d H:i:s'),
+                        'updated_at' => $commission->updated_at->format('Y-m-d H:i:s'),
+                    ]
+                ]
+            ]);
+        }
+
+        return view('admin.affiliates.show-commission', compact('commission'));
+    }
+
+    /**
      * Display commissions
      */
     public function commissions(Request $request)

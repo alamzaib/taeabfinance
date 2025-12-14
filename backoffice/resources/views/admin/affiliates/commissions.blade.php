@@ -66,6 +66,42 @@
             </small>
         </div>
     </div>
+
+    <!-- Commission Details Modal -->
+    <div class="modal fade" id="commissionModal" tabindex="-1" role="dialog" aria-labelledby="commissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="commissionModalLabel">Commission Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Referrer:</strong> <span id="commissionModalReferrer">-</span></p>
+                            <p><strong>Referrer Email:</strong> <span id="commissionModalReferrerEmail">-</span></p>
+                            <p><strong>Referred User:</strong> <span id="commissionModalReferred">-</span></p>
+                            <p><strong>Referred Email:</strong> <span id="commissionModalReferredEmail">-</span></p>
+                            <p><strong>Payment ID:</strong> <span id="commissionModalPaymentId">-</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Commission Type:</strong> <span id="commissionModalType">-</span></p>
+                            <p><strong>Commission Rate:</strong> <span id="commissionModalRate">-</span></p>
+                            <p><strong>Commission Amount:</strong> <span id="commissionModalAmount">-</span></p>
+                            <p><strong>Status:</strong> <span id="commissionModalStatus">-</span></p>
+                            <p><strong>Paid At:</strong> <span id="commissionModalPaidAt">-</span></p>
+                            <p><strong>Created At:</strong> <span id="commissionModalCreated">-</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('css')
@@ -95,13 +131,54 @@
             pagination: true,
             paginationSize: 20,
             paginationSizeSelector: [10, 20, 50, 100],
+            rowDblClick: function(e, row) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.btn')) {
+                    return;
+                }
+                var commissionId = row.getData().id;
+                if (commissionId) {
+                    showCommissionDetails(commissionId);
+                }
+            },
             columns: [
-                {title: "Referrer", field: "referrer_name", formatter: function(cell) {
-                    return cell.getValue() + (cell.getData().referrer_email ? ' (' + cell.getData().referrer_email + ')' : '');
-                }},
-                {title: "Referred User", field: "referred_name", formatter: function(cell) {
-                    return cell.getValue() + (cell.getData().referred_email ? ' (' + cell.getData().referred_email + ')' : '');
-                }},
+                {
+                    title: "Referrer", 
+                    field: "referrer_name", 
+                    formatter: function(cell) {
+                        return cell.getValue() + (cell.getData().referrer_email ? ' (' + cell.getData().referrer_email + ')' : '');
+                    },
+                    cellDblClick: function(e, cell) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.btn')) {
+                            return;
+                        }
+                        var commissionId = cell.getRow().getData().id;
+                        if (commissionId) {
+                            showCommissionDetails(commissionId);
+                        }
+                    }
+                },
+                {
+                    title: "Referred User", 
+                    field: "referred_name", 
+                    formatter: function(cell) {
+                        return cell.getValue() + (cell.getData().referred_email ? ' (' + cell.getData().referred_email + ')' : '');
+                    },
+                    cellDblClick: function(e, cell) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.btn')) {
+                            return;
+                        }
+                        var commissionId = cell.getRow().getData().id;
+                        if (commissionId) {
+                            showCommissionDetails(commissionId);
+                        }
+                    }
+                },
                 {title: "Commission Type", field: "commission_type_display", formatter: function(cell) {
                     var type = cell.getValue();
                     var badgeClass = type === 'Signup Commission' ? 'badge-info' : 'badge-primary';
@@ -211,6 +288,63 @@
                     window.handleAjaxError(error, 'Error updating status.');
                 });
             }, 'Update Status', 'Confirm', 'Cancel');
+        }
+
+        function showCommissionDetails(commissionId) {
+            if (!commissionId) {
+                console.error('No commission ID provided');
+                return;
+            }
+            
+            fetch('/backoffice/affiliates/commissions/' + commissionId, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.data && data.data.commission) {
+                    var commission = data.data.commission;
+                    $('#commissionModalReferrer').text(commission.referrer_name || 'N/A');
+                    $('#commissionModalReferrerEmail').text(commission.referrer_email || 'N/A');
+                    $('#commissionModalReferred').text(commission.referred_name || 'N/A');
+                    $('#commissionModalReferredEmail').text(commission.referred_email || 'N/A');
+                    $('#commissionModalPaymentId').html(commission.payment_id ? '<a href="/backoffice/payments/' + commission.payment_id + '" target="_blank">#' + commission.payment_id + '</a>' : '<span class="text-muted">Signup Bonus</span>');
+                    $('#commissionModalType').text(commission.commission_type || 'N/A');
+                    $('#commissionModalRate').text(commission.commission_rate ? commission.commission_rate + '%' : 'N/A');
+                    $('#commissionModalAmount').text('$' + parseFloat(commission.commission_amount || 0).toFixed(2));
+                    var statusColors = {pending: 'warning', approved: 'info', paid: 'success', cancelled: 'danger'};
+                    var statusColor = statusColors[commission.status] || 'secondary';
+                    $('#commissionModalStatus').html('<span class="badge badge-' + statusColor + '">' + (commission.status ? commission.status.charAt(0).toUpperCase() + commission.status.slice(1) : 'N/A') + '</span>');
+                    $('#commissionModalPaidAt').text(commission.paid_at ? new Date(commission.paid_at).toLocaleDateString() : 'N/A');
+                    $('#commissionModalCreated').text(commission.created_at ? new Date(commission.created_at).toLocaleDateString() : 'N/A');
+                    
+                    // Show modal using Bootstrap
+                    if (typeof jQuery !== 'undefined' && jQuery.fn.modal) {
+                        var $modal = $('#commissionModal');
+                        $modal.modal('show');
+                        $modal.find('.close, [data-dismiss="modal"]').off('click').on('click', function() {
+                            $modal.modal('hide');
+                        });
+                    }
+                } else {
+                    throw new Error('Invalid response data');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching commission details:', error);
+                if (typeof showToast !== 'undefined' && showToast && showToast.error) {
+                    showToast.error('Error loading commission details: ' + (error.message || 'Unknown error'));
+                } else {
+                    alert('Error loading commission details: ' + (error.message || 'Unknown error'));
+                }
+            });
         }
 
         // Initialize tooltips on table data loaded

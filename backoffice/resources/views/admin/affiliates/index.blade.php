@@ -18,6 +18,45 @@
             <div id="affiliate-links-table" style="width: 100%;"></div>
         </div>
     </div>
+
+    <!-- Affiliate Link Details Modal -->
+    <div class="modal fade" id="affiliateLinkModal" tabindex="-1" role="dialog" aria-labelledby="affiliateLinkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="affiliateLinkModalLabel">Affiliate Link Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>User:</strong> <span id="linkModalUser">-</span></p>
+                            <p><strong>Email:</strong> <span id="linkModalEmail">-</span></p>
+                            <p><strong>Affiliate Code:</strong> <span id="linkModalCode">-</span></p>
+                            <p><strong>Status:</strong> <span id="linkModalStatus">-</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Clicks:</strong> <span id="linkModalClicks">-</span></p>
+                            <p><strong>Signups:</strong> <span id="linkModalSignups">-</span></p>
+                            <p><strong>Created At:</strong> <span id="linkModalCreated">-</span></p>
+                            <p><strong>Updated At:</strong> <span id="linkModalUpdated">-</span></p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <strong>Affiliate Link:</strong>
+                            <p id="linkModalLink" class="mt-2"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('css')
@@ -42,12 +81,67 @@
             pagination: true,
             paginationSize: 20,
             paginationSizeSelector: [10, 20, 50, 100],
+            rowDblClick: function(e, row) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.btn')) {
+                    return;
+                }
+                var linkId = row.getData().id;
+                if (linkId) {
+                    showAffiliateLinkDetails(linkId);
+                }
+            },
             columns: [
-                {title: "ID", field: "id", width: 80},
-                {title: "User", field: "user_name", formatter: function(cell) {
-                    return cell.getValue() + (cell.getData().user_email ? ' (' + cell.getData().user_email + ')' : '');
-                }},
-                {title: "Affiliate Code", field: "affiliate_code"},
+                {
+                    title: "ID", 
+                    field: "id", 
+                    width: 80,
+                    cellDblClick: function(e, cell) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.btn')) {
+                            return;
+                        }
+                        var linkId = cell.getRow().getData().id;
+                        if (linkId) {
+                            showAffiliateLinkDetails(linkId);
+                        }
+                    }
+                },
+                {
+                    title: "User", 
+                    field: "user_name", 
+                    formatter: function(cell) {
+                        return cell.getValue() + (cell.getData().user_email ? ' (' + cell.getData().user_email + ')' : '');
+                    },
+                    cellDblClick: function(e, cell) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.btn')) {
+                            return;
+                        }
+                        var linkId = cell.getRow().getData().id;
+                        if (linkId) {
+                            showAffiliateLinkDetails(linkId);
+                        }
+                    }
+                },
+                {
+                    title: "Affiliate Code", 
+                    field: "affiliate_code",
+                    cellDblClick: function(e, cell) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.btn')) {
+                            return;
+                        }
+                        var linkId = cell.getRow().getData().id;
+                        if (linkId) {
+                            showAffiliateLinkDetails(linkId);
+                        }
+                    }
+                },
                 {
                     title: "Public Affiliate Link",
                     field: "affiliate_link",
@@ -115,6 +209,59 @@
                     window.handleAjaxError(error, 'Error updating status.');
                 });
             }, 'Toggle Status', 'Confirm', 'Cancel');
+        }
+
+        function showAffiliateLinkDetails(linkId) {
+            if (!linkId) {
+                console.error('No affiliate link ID provided');
+                return;
+            }
+            
+            fetch('/backoffice/affiliates/links/' + linkId, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.data && data.data.affiliateLink) {
+                    var link = data.data.affiliateLink;
+                    $('#linkModalUser').text(link.user_name || 'N/A');
+                    $('#linkModalEmail').text(link.user_email || 'N/A');
+                    $('#linkModalCode').text(link.affiliate_code || 'N/A');
+                    $('#linkModalClicks').text(link.clicks || 0);
+                    $('#linkModalSignups').text(link.signups || 0);
+                    $('#linkModalLink').html('<a href="' + (link.affiliate_link || '#') + '" target="_blank">' + (link.affiliate_link || 'N/A') + '</a>');
+                    $('#linkModalStatus').html('<span class="badge badge-' + (link.active ? 'success' : 'secondary') + '">' + (link.active ? 'Active' : 'Inactive') + '</span>');
+                    $('#linkModalCreated').text(link.created_at ? new Date(link.created_at).toLocaleDateString() : 'N/A');
+                    $('#linkModalUpdated').text(link.updated_at ? new Date(link.updated_at).toLocaleDateString() : 'N/A');
+                    
+                    // Show modal using Bootstrap
+                    if (typeof jQuery !== 'undefined' && jQuery.fn.modal) {
+                        var $modal = $('#affiliateLinkModal');
+                        $modal.modal('show');
+                        $modal.find('.close, [data-dismiss="modal"]').off('click').on('click', function() {
+                            $modal.modal('hide');
+                        });
+                    }
+                } else {
+                    throw new Error('Invalid response data');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching affiliate link details:', error);
+                if (typeof showToast !== 'undefined' && showToast && showToast.error) {
+                    showToast.error('Error loading affiliate link details: ' + (error.message || 'Unknown error'));
+                } else {
+                    alert('Error loading affiliate link details: ' + (error.message || 'Unknown error'));
+                }
+            });
         }
 
         // Initialize tooltips on table data loaded

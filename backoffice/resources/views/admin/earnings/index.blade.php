@@ -20,6 +20,10 @@
                 onclick="openCreateModal()">
                 <i class="fas fa-plus"></i> Add Earning
             </button>
+            <!-- Test button to verify modal works -->
+            <button class="btn btn-secondary btn-sm" onclick="testModal()" title="Test Modal">
+                <i class="fas fa-vial"></i> Test Modal
+            </button>
         </div>
     </div>
 @stop
@@ -345,20 +349,37 @@
             paginationSize: 20,
             paginationSizeSelector: [10, 20, 50, 100],
             rowDblClick: function(e, row) {
-                console.log('Row double-clicked', row.getData());
-                e.preventDefault();
-                e.stopPropagation();
-                // Don't trigger on action buttons
-                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('.btn')) {
-                    console.log('Double-click ignored - clicked on button/link');
-                    return;
-                }
-                var earningId = row.getData().id;
-                console.log('Showing earning details for ID:', earningId);
-                if (earningId) {
+                console.log('=== ROW DOUBLE-CLICK EVENT FIRED ===');
+                console.log('Event:', e);
+                console.log('Row data:', row.getData());
+                
+                try {
+                    // Don't trigger on action buttons
+                    var target = e.target || (e.originalEvent && e.originalEvent.target);
+                    if (target) {
+                        var $target = $(target);
+                        if ($target.closest('button').length || $target.closest('a').length || $target.closest('.btn').length) {
+                            console.log('Double-click ignored - clicked on button/link');
+                            return;
+                        }
+                    }
+                    
+                    var earningId = row.getData().id;
+                    console.log('Earning ID:', earningId);
+                    
+                    if (!earningId) {
+                        console.error('No earning ID found in row data');
+                        alert('No earning ID found. Please check the console for details.');
+                        return;
+                    }
+                    
+                    console.log('Calling showEarningDetails with ID:', earningId);
                     showEarningDetails(earningId);
-                } else {
-                    console.error('No earning ID found');
+                    
+                } catch (err) {
+                    console.error('Error in rowDblClick:', err);
+                    console.error('Error stack:', err.stack);
+                    alert('Error in double-click handler: ' + err.message);
                 }
             },
             columns: [
@@ -565,27 +586,67 @@
                     
                     // Show modal using Bootstrap
                     console.log('Attempting to show modal');
-                    if (typeof jQuery !== 'undefined' && jQuery.fn.modal) {
-                        console.log('Using jQuery modal');
-                        $('#earningModal').modal('show');
-                        // Force show if modal doesn't appear
+                    var $modal = $('#earningModal');
+                    
+                    if ($modal.length === 0) {
+                        console.error('Modal element not found!');
+                        alert('Modal element not found. Please refresh the page.');
+                        return;
+                    }
+                    
+                    // Use jQuery/Bootstrap modal - force show
+                    console.log('Modal element found, showing...');
+                    try {
+                        // Remove any existing backdrop first
+                        $('.modal-backdrop').remove();
+                        $('body').removeClass('modal-open');
+                        
+                        // Show modal
+                        $modal.modal({
+                            backdrop: true,
+                            keyboard: true,
+                            show: true
+                        });
+                        
+                        // Force show if it doesn't appear
                         setTimeout(function() {
-                            if (!$('#earningModal').hasClass('show')) {
-                                console.log('Modal not showing, forcing display');
-                                $('#earningModal').addClass('show').css('display', 'block');
+                            if (!$modal.hasClass('show') || $modal.css('display') === 'none') {
+                                console.log('Modal not showing, forcing display...');
+                                $modal.css({
+                                    'display': 'block',
+                                    'padding-right': '17px'
+                                }).addClass('show');
                                 $('body').addClass('modal-open');
-                                $('.modal-backdrop').remove();
-                                $('body').append('<div class="modal-backdrop fade show"></div>');
+                                if ($('.modal-backdrop').length === 0) {
+                                    $('body').append('<div class="modal-backdrop fade show"></div>');
+                                }
                             }
                         }, 100);
-                    } else {
-                        console.log('jQuery/Bootstrap not available, using fallback');
-                        // Fallback if jQuery/Bootstrap not loaded
-                        var modal = document.getElementById('earningModal');
-                        if (modal) {
-                            modal.style.display = 'block';
-                            modal.classList.add('show');
-                            document.body.classList.add('modal-open');
+                        
+                        // Ensure close button works
+                        $modal.find('.close, [data-dismiss="modal"]').off('click.modal').on('click.modal', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            $modal.modal('hide');
+                            $('.modal-backdrop').remove();
+                            $('body').removeClass('modal-open');
+                        });
+                        
+                        // Also handle backdrop click
+                        $(document).off('click.earningModal').on('click.earningModal', '.modal-backdrop', function() {
+                            $modal.modal('hide');
+                        });
+                        
+                    } catch (err) {
+                        console.error('Error showing modal:', err);
+                        // Fallback to manual display
+                        $modal.css({
+                            'display': 'block',
+                            'padding-right': '17px'
+                        }).addClass('show');
+                        $('body').addClass('modal-open');
+                        if ($('.modal-backdrop').length === 0) {
+                            $('body').append('<div class="modal-backdrop fade show"></div>');
                         }
                     }
                 } else {
