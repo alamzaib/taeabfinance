@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide explains how to set up and configure the Stripe payment integration for the TAEAB Finance application.
+This guide explains how to set up and configure the Stripe payment integration for the TAEAB application.
 
 ## Features
 

@@ -96,7 +96,6 @@
             paginationSize: 20,
             paginationSizeSelector: [10, 20, 50, 100],
             columns: [
-                {title: "ID", field: "id", width: 80},
                 {title: "Referrer", field: "referrer_name", formatter: function(cell) {
                     return cell.getValue() + (cell.getData().referrer_email ? ' (' + cell.getData().referrer_email + ')' : '');
                 }},

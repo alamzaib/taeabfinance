@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use App\Models\Notification;
 use App\Mail\ContactSupportMail;
 use App\Mail\ContactConfirmationMail;
+use App\Mail\UserRegistrationMail;
+use App\Mail\ReferralSignupMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
@@ -83,6 +85,12 @@ class SendNotifications extends Command
                 break;
             case 'contact_confirmation':
                 $mailable = new ContactConfirmationMail($notification);
+                break;
+            case 'user_registration':
+                $mailable = new UserRegistrationMail($notification);
+                break;
+            case 'referral_signup':
+                $mailable = new ReferralSignupMail($notification);
                 break;
             default:
                 throw new \Exception("Unknown notification type: {$notification->type}");

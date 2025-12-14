@@ -17,3 +17,7 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/payment/{token}', [PublicPaymentController::class, 'show'])->name('payment.show');
 Route::get('/payment/success', [PublicPaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/cancel', [PublicPaymentController::class, 'cancel'])->name('payment.cancel');
+
+// Unsubscribe Routes
+Route::get('/unsubscribe/{token}', [\App\Http\Controllers\UnsubscribeController::class, 'unsubscribe'])->name('unsubscribe');
+Route::get('/resubscribe/{token}', [\App\Http\Controllers\UnsubscribeController::class, 'resubscribe'])->name('resubscribe');

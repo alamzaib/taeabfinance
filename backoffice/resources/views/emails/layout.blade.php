@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'TAEAB Finance')</title>
+    <title>@yield('title', 'TAEAB')</title>
     <style>
         body {
             margin: 0;
@@ -77,6 +77,11 @@
     <div class="email-container">
         <!-- Header -->
         <div class="email-header">
+            @php
+                // Try to use frontend logo URL, fallback to text
+                $logoUrl = config('app.frontend_url', config('app.url')) . '/images/logo.png';
+            @endphp
+            <img src="{{ $logoUrl }}" alt="TAEAB Logo" style="max-width: 150px; height: auto; margin-bottom: 10px;" onerror="this.style.display='none';">
             <h1>TAEAB</h1>
             <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 14px;">Invest, Save, Earn</p>
         </div>
@@ -88,18 +93,23 @@
 
         <!-- Footer -->
         <div class="email-footer">
-            <p><strong>TAEAB Finance</strong></p>
+            <p><strong>TAEAB</strong></p>
             <p>Your trusted partner for investments, savings, and earnings</p>
             <p>
                 <a href="mailto:support@taeab.com">support@taeab.com</a> | 
                 <a href="{{ config('app.url') }}">Visit Website</a>
             </p>
             <p style="margin-top: 20px; font-size: 12px; color: #adb5bd;">
-                © {{ date('Y') }} TAEAB Finance. All rights reserved.
+                © {{ date('Y') }} TAEAB. All rights reserved.
             </p>
             <p style="font-size: 12px; color: #adb5bd;">
                 This email was sent to {{ $to_email ?? 'you' }}. If you did not expect this email, please ignore it.
             </p>
+            @if(isset($unsubscribeUrl) && $unsubscribeUrl)
+                <p style="margin-top: 15px; font-size: 11px; color: #adb5bd;">
+                    <a href="{{ $unsubscribeUrl }}" style="color: #6c757d; text-decoration: underline;">Unsubscribe from future emails</a>
+                </p>
+            @endif
         </div>
     </div>
 </body>

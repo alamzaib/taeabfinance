@@ -87,6 +87,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'referred_by' => $referredBy,
+            'email_notifications_enabled' => true, // Enable notifications by default
         ]);
 
         // Create affiliate link for new user

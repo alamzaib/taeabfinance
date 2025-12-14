@@ -24,6 +24,8 @@ class User extends Authenticatable
         'email',
         'password',
         'referred_by',
+        'unsubscribe_token',
+        'email_notifications_enabled',
     ];
 
     /**
