@@ -1,6 +1,6 @@
-# Taeab Finance Frontend
+# Taeab Frontend
 
-Next.js frontend application for Taeab Finance platform.
+Next.js frontend application for Taeab platform.
 
 ## Getting Started
 

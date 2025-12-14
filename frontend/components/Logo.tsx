@@ -13,7 +13,7 @@ function LogoComponent({ className = "" }: { className?: string }) {
         <div className="relative w-10 h-10 flex-shrink-0">
           <Image
             src="/images/logo.png"
-            alt="Taeab Finance Logo"
+            alt="Taeab Logo"
             width={40}
             height={40}
             className="object-contain"

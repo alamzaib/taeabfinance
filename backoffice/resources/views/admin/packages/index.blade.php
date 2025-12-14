@@ -40,8 +40,11 @@
                             <p><strong>Price:</strong> <span id="packageModalPrice"></span></p>
                             <p><strong>Currency:</strong> <span id="packageModalCurrency"></span></p>
                             <p><strong>Period:</strong> <span id="packageModalPeriod"></span></p>
+                            <p><strong>Fixed Percent:</strong> <span id="packageModalFixedPercent"></span></p>
                         </div>
                         <div class="col-md-6">
+                            <p><strong>Bonus:</strong> <span id="packageModalBonus"></span></p>
+                            <p><strong>Miscellaneous Commission:</strong> <span id="packageModalMiscCommission"></span></p>
                             <p><strong>Popular:</strong> <span id="packageModalPopular"></span></p>
                             <p><strong>Active:</strong> <span id="packageModalActive"></span></p>
                             <p><strong>Created At:</strong> <span id="packageModalCreated"></span></p>
@@ -128,6 +131,43 @@
                                 </div>
                             </div>
                         </div>
+                        <hr>
+                        <h6>Commission Settings</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="create_fixed_percent">Fixed Percent (%)</label>
+                                    <input type="number" step="0.01" min="0" max="100" class="form-control" id="create_fixed_percent" name="fixed_percent" placeholder="0.00">
+                                    <small class="form-text text-muted">Commission percentage (0-100)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Bonus</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="bonus" id="create_bonus_yes" value="1">
+                                        <label class="form-check-label" for="create_bonus_yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="bonus" id="create_bonus_no" value="0" checked>
+                                        <label class="form-check-label" for="create_bonus_no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Miscellaneous Commission</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="miscellaneous_commission" id="create_misc_yes" value="1">
+                                        <label class="form-check-label" for="create_misc_yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="miscellaneous_commission" id="create_misc_no" value="0" checked>
+                                        <label class="form-check-label" for="create_misc_no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -206,6 +246,43 @@
                                 </div>
                             </div>
                         </div>
+                        <hr>
+                        <h6>Commission Settings</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="edit_fixed_percent">Fixed Percent (%)</label>
+                                    <input type="number" step="0.01" min="0" max="100" class="form-control" id="edit_fixed_percent" name="fixed_percent" placeholder="0.00">
+                                    <small class="form-text text-muted">Commission percentage (0-100)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Bonus</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="bonus" id="edit_bonus_yes" value="1">
+                                        <label class="form-check-label" for="edit_bonus_yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="bonus" id="edit_bonus_no" value="0">
+                                        <label class="form-check-label" for="edit_bonus_no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Miscellaneous Commission</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="miscellaneous_commission" id="edit_misc_yes" value="1">
+                                        <label class="form-check-label" for="edit_misc_yes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="miscellaneous_commission" id="edit_misc_no" value="0">
+                                        <label class="form-check-label" for="edit_misc_no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -267,6 +344,12 @@
                 },
                 {title: "Price", field: "price", formatter: "money", formatterParams: {symbol: "$", precision: 2}},
                 {title: "Period", field: "period"},
+                {title: "Fixed %", field: "fixed_percent", formatter: function(cell) {
+                    var val = cell.getValue();
+                    return val ? val + '%' : '-';
+                }},
+                {title: "Bonus", field: "bonus", formatter: "tickCross"},
+                {title: "Misc Commission", field: "miscellaneous_commission", formatter: "tickCross"},
                 {title: "Popular", field: "popular", formatter: "tickCross"},
                 {title: "Active", field: "active", formatter: "tickCross"},
                 {
@@ -296,6 +379,9 @@
                         $('#packageModalPrice').text(pkg.currency + ' ' + parseFloat(pkg.price).toFixed(2));
                         $('#packageModalCurrency').text(pkg.currency);
                         $('#packageModalPeriod').text(pkg.period.charAt(0).toUpperCase() + pkg.period.slice(1));
+                        $('#packageModalFixedPercent').text(pkg.fixed_percent ? pkg.fixed_percent + '%' : 'N/A');
+                        $('#packageModalBonus').html(pkg.bonus ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>');
+                        $('#packageModalMiscCommission').html(pkg.miscellaneous_commission ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>');
                         $('#packageModalPopular').html(pkg.popular ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-secondary">No</span>');
                         $('#packageModalActive').html(pkg.active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>');
                         $('#packageModalCreated').text(new Date(pkg.created_at).toLocaleDateString());
@@ -328,6 +414,9 @@
             $('#createPackageForm')[0].reset();
             $('#create-features-container').empty();
             $('#create_active').prop('checked', true);
+            // Reset radio buttons to default (No)
+            $('#create_bonus_no').prop('checked', true);
+            $('#create_misc_no').prop('checked', true);
             $('#createPackageModal').modal('show');
         }
 
@@ -356,6 +445,9 @@
             // Handle checkbox values properly
             formData.set('popular', $('#create_popular').is(':checked') ? '1' : '0');
             formData.set('active', $('#create_active').is(':checked') ? '1' : '0');
+            // Handle radio buttons
+            formData.set('bonus', $('input[name="bonus"]:checked').val() || '0');
+            formData.set('miscellaneous_commission', $('input[name="miscellaneous_commission"]:checked').val() || '0');
             
             fetch('/backoffice/packages', {
                 method: 'POST',
@@ -419,6 +511,19 @@
                     $('#edit_period').val(pkg.period);
                     $('#edit_popular').prop('checked', pkg.popular);
                     $('#edit_active').prop('checked', pkg.active);
+                    $('#edit_fixed_percent').val(pkg.fixed_percent || '');
+                    // Set bonus radio button
+                    if (pkg.bonus) {
+                        $('#edit_bonus_yes').prop('checked', true);
+                    } else {
+                        $('#edit_bonus_no').prop('checked', true);
+                    }
+                    // Set miscellaneous commission radio button
+                    if (pkg.miscellaneous_commission) {
+                        $('#edit_misc_yes').prop('checked', true);
+                    } else {
+                        $('#edit_misc_no').prop('checked', true);
+                    }
                     
                     // Populate features
                     $('#edit-features-container').empty();
@@ -459,6 +564,9 @@
             // Handle checkbox values properly
             formData.set('popular', $('#edit_popular').is(':checked') ? '1' : '0');
             formData.set('active', $('#edit_active').is(':checked') ? '1' : '0');
+            // Handle radio buttons
+            formData.set('bonus', $('input[name="bonus"]:checked').val() || '0');
+            formData.set('miscellaneous_commission', $('input[name="miscellaneous_commission"]:checked').val() || '0');
 
             fetch('/backoffice/packages/' + packageId, {
                 method: 'POST',

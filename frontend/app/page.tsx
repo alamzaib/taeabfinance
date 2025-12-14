@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Layout from "@/components/Layout";
-import Logo from "@/components/Logo";
+import Footer from "@/components/Footer";
 
 export default function HomePage() {
   return (
@@ -42,7 +42,7 @@ export default function HomePage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose Taeab Finance?</h2>
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose Taeab?</h2>
             <p className="text-xl text-gray-600">Your trusted partner for financial growth</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -68,8 +68,8 @@ export default function HomePage() {
                 with our AI-powered investment strategies.
               </p>
             </div>
-            <div className="p-8 rounded-xl border-2 border-accent-100 hover:border-accent-300 hover:shadow-xl transition bg-gradient-to-br from-accent-50 to-white">
-              <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center mb-6">
+            <div className="p-8 rounded-xl border-2 border-primary-100 hover:border-primary-300 hover:shadow-xl transition bg-gradient-to-br from-primary-50 to-white">
+              <div className="w-16 h-16 gradient-green rounded-xl flex items-center justify-center mb-6">
                 <svg
                   className="w-8 h-8 text-white"
                   fill="none"
@@ -145,7 +145,7 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-4">Ready to Start Your Financial Journey?</h2>
           <p className="text-xl text-green-50 mb-8">
-            Join thousands of investors who are already growing their wealth with Taeab Finance.
+                Join thousands of investors who are already growing their wealth with Taeab.
           </p>
           <Link
             href="/register"
@@ -157,64 +157,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <Logo className="mb-4" />
-              <p className="text-gray-400">Your trusted partner for smart investing, secure savings, and passive earnings.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-white">Invest</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/packages" className="hover:text-primary-400 transition">
-                    Investment Plans
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/dashboard" className="hover:text-primary-400 transition">
-                    Portfolio
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-white">Company</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-primary-400 transition">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-primary-400 transition">
-                    Contact
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-white">Account</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <Link href="/login" className="hover:text-primary-400 transition">
-                    Login
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/register" className="hover:text-primary-400 transition">
-                    Register
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>&copy; 2024 Taeab Finance. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
       </div>
     </Layout>
   );

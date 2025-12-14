@@ -70,15 +70,12 @@ function NavigationComponent() {
                 <Link href="/packages" className="text-gray-700 hover:text-primary-600 transition font-medium">
                   Investment Plans
                 </Link>
-                    <Link href="/dashboard" className="text-gray-700 hover:text-primary-600 transition font-medium">
-                      Dashboard
-                    </Link>
-                    <Link href="/contact" className="text-gray-700 hover:text-primary-600 transition font-medium">
-                      Contact
-                    </Link>
-                    <Link href="/login" className="text-gray-700 hover:text-primary-600 transition font-medium">
-                      Login
-                    </Link>
+                <Link href="/contact" className="text-gray-700 hover:text-primary-600 transition font-medium">
+                  Contact
+                </Link>
+                <Link href="/login" className="text-gray-700 hover:text-primary-600 transition font-medium">
+                  Login
+                </Link>
                 <Link
                   href="/register"
                   className="gradient-green text-white px-4 py-2 rounded-lg hover:opacity-90 transition shadow-md font-semibold"

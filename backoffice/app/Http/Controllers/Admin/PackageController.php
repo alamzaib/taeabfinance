@@ -22,6 +22,9 @@ class PackageController extends Controller
                     'period' => $package->period,
                     'popular' => $package->popular,
                     'active' => $package->active,
+                    'fixed_percent' => $package->fixed_percent,
+                    'bonus' => $package->bonus,
+                    'miscellaneous_commission' => $package->miscellaneous_commission,
                     'created_at' => $package->created_at->format('Y-m-d H:i:s'),
                 ];
             });
@@ -89,6 +92,9 @@ class PackageController extends Controller
                         'features' => $package->features ?? [],
                         'popular' => $package->popular,
                         'active' => $package->active,
+                        'fixed_percent' => $package->fixed_percent,
+                        'bonus' => $package->bonus,
+                        'miscellaneous_commission' => $package->miscellaneous_commission,
                         'created_at' => $package->created_at->toDateTimeString(),
                         'updated_at' => $package->updated_at->toDateTimeString(),
                     ]
@@ -113,6 +119,9 @@ class PackageController extends Controller
                         'features' => $package->features ?? [],
                         'popular' => $package->popular,
                         'active' => $package->active,
+                        'fixed_percent' => $package->fixed_percent,
+                        'bonus' => $package->bonus,
+                        'miscellaneous_commission' => $package->miscellaneous_commission,
                     ]
                 ]
             ]);
@@ -131,6 +140,9 @@ class PackageController extends Controller
                 'features' => 'nullable|array',
                 'popular' => 'boolean',
                 'active' => 'boolean',
+                'fixed_percent' => 'nullable|numeric|min:0|max:100',
+                'bonus' => 'boolean',
+                'miscellaneous_commission' => 'boolean',
             ]);
 
             $oldValues = $package->toArray();

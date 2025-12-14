@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: "Taeab Finance - Invest, Save, Earn",
+  title: "Taeab - Invest, Save, Earn",
   description: "Grow your wealth with smart investments, secure savings, and passive income opportunities. Start your financial journey today.",
 };
 

@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { authAPI } from "@/lib/api";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { authAPI, affiliateAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/components/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { refreshAuth } = useAuth();
+  const searchParams = useSearchParams();
+  const { isAuthenticated, loading: authLoading, refreshAuth } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,6 +19,42 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [refCode, setRefCode] = useState<string | null>(null);
+
+  // Get ref code from URL and track click
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      setRefCode(ref);
+      // Track click when page loads with ref parameter
+      affiliateAPI.trackClick(ref).catch(err => {
+        console.error('Failed to track affiliate click:', err);
+      });
+    }
+  }, [searchParams]);
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen gradient-green-light flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render register form if already authenticated (will redirect)
+  if (isAuthenticated) {
+    return null;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -42,7 +79,8 @@ export default function RegisterPage() {
         formData.name,
         formData.email,
         formData.password,
-        formData.password_confirmation
+        formData.password_confirmation,
+        refCode || undefined
       );
       if (response.success && response.data.token) {
         localStorage.setItem("auth_token", response.data.token);
@@ -70,6 +108,11 @@ export default function RegisterPage() {
           <p className="mt-2 text-sm text-gray-600">
             Create your account and begin investing, saving, and earning today
           </p>
+          {refCode && (
+            <div className="mt-3 inline-block bg-primary-50 border border-primary-200 text-primary-700 px-4 py-2 rounded-lg text-sm">
+              <span className="font-medium">Referral Code Detected:</span> {refCode}
+            </div>
+          )}
           <p className="mt-2 text-sm text-gray-600">
             Already have an account?{" "}
             <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">

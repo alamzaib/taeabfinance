@@ -71,12 +71,13 @@ export const authAPI = {
     return response.data;
   },
   
-  register: async (name: string, email: string, password: string, password_confirmation: string) => {
+  register: async (name: string, email: string, password: string, password_confirmation: string, ref?: string) => {
     const response = await api.post('/api/v1/register', {
       name,
       email,
       password,
       password_confirmation,
+      ref: ref || null,
     });
     return response.data;
   },
@@ -212,6 +213,28 @@ export const earningsAPI = {
         phone?: string;
       }) => {
         const response = await api.post('/api/v1/contact', data);
+        return response.data;
+      },
+    };
+
+    export const affiliateAPI = {
+      getLink: async () => {
+        const response = await api.get('/api/v1/affiliate/link');
+        return response.data;
+      },
+      
+      getCommissions: async () => {
+        const response = await api.get('/api/v1/affiliate/commissions');
+        return response.data;
+      },
+      
+      getStats: async () => {
+        const response = await api.get('/api/v1/affiliate/stats');
+        return response.data;
+      },
+      
+      trackClick: async (code: string) => {
+        const response = await api.post('/api/v1/affiliate/track-click', { code });
         return response.data;
       },
     };

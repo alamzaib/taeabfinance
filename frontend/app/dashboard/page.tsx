@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Layout from "@/components/Layout";
-import { earningsAPI, billingAPI } from "@/lib/api";
+import { earningsAPI, billingAPI, affiliateAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Earning {
@@ -33,7 +33,12 @@ export default function DashboardPage() {
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [thisMonthEarnings, setThisMonthEarnings] = useState(0);
+  const [affiliateLink, setAffiliateLink] = useState<string>("");
+  const [affiliateCode, setAffiliateCode] = useState<string>("");
+  const [affiliateStats, setAffiliateStats] = useState<any>(null);
+  const [affiliateCommissions, setAffiliateCommissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +56,23 @@ export default function DashboardPage() {
         if (billingResponse.success && billingResponse.data) {
           setRecentPayments(billingResponse.data.recent_payments?.slice(0, 5) || []);
         }
+
+        // Fetch affiliate data
+        const affiliateLinkResponse = await affiliateAPI.getLink();
+        if (affiliateLinkResponse.success && affiliateLinkResponse.data) {
+          setAffiliateLink(affiliateLinkResponse.data.affiliate_link);
+          setAffiliateCode(affiliateLinkResponse.data.affiliate_code);
+        }
+
+        const affiliateStatsResponse = await affiliateAPI.getStats();
+        if (affiliateStatsResponse.success && affiliateStatsResponse.data) {
+          setAffiliateStats(affiliateStatsResponse.data);
+        }
+
+        const commissionsResponse = await affiliateAPI.getCommissions();
+        if (commissionsResponse.success && commissionsResponse.data) {
+          setAffiliateCommissions(commissionsResponse.data.commissions?.slice(0, 5) || []);
+        }
       } catch (err: any) {
         if (err.response?.status === 401) {
           router.push("/login");
@@ -62,6 +84,28 @@ export default function DashboardPage() {
 
     fetchData();
   }, [router]);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const shareLink = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: "Join Taeab",
+        text: "Start investing with Taeab using my referral link!",
+        url: affiliateLink,
+      });
+    } else {
+      copyToClipboard(affiliateLink);
+    }
+  };
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
