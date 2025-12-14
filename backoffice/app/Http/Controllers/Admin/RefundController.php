@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\RefundRequest;
 use Illuminate\Http\Request;
+use App\LogsActivity;
 
 class RefundController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
@@ -58,15 +60,25 @@ class RefundController extends Controller
             'admin_notes' => 'nullable|string',
         ]);
 
+        $oldValues = $refundRequest->toArray();
         $refundRequest->update([
             'status' => 'approved',
             'admin_notes' => $validated['admin_notes'] ?? null,
             'processed_by' => auth()->id(),
             'processed_at' => now(),
         ]);
+        $newValues = $refundRequest->fresh()->toArray();
+        
+        // Log activity
+        $this->logActivity('approve', 'Refund Requests', $refundRequest, null, $oldValues, $newValues);
 
         // Update payment status
+        $paymentOldValues = $refundRequest->payment->toArray();
         $refundRequest->payment->update(['status' => 'refunded']);
+        $paymentNewValues = $refundRequest->payment->fresh()->toArray();
+        
+        // Log payment update
+        $this->logActivity('update', 'Payments', $refundRequest->payment, 'Payment refunded', $paymentOldValues, $paymentNewValues);
 
         return redirect()->back()->with('success', 'Refund approved successfully.');
     }
@@ -77,12 +89,17 @@ class RefundController extends Controller
             'admin_notes' => 'required|string',
         ]);
 
+        $oldValues = $refundRequest->toArray();
         $refundRequest->update([
             'status' => 'rejected',
             'admin_notes' => $validated['admin_notes'],
             'processed_by' => auth()->id(),
             'processed_at' => now(),
         ]);
+        $newValues = $refundRequest->fresh()->toArray();
+        
+        // Log activity
+        $this->logActivity('reject', 'Refund Requests', $refundRequest, null, $oldValues, $newValues);
 
         return redirect()->back()->with('success', 'Refund rejected.');
     }

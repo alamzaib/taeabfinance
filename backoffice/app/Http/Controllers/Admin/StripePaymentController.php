@@ -8,9 +8,11 @@ use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use Stripe\Exception\ApiErrorException;
+use App\LogsActivity;
 
 class StripePaymentController extends Controller
 {
+    use LogsActivity;
     public function __construct()
     {
         Stripe::setApiKey(config('services.stripe.secret'));
@@ -74,6 +76,9 @@ class StripePaymentController extends Controller
                 'payment_link' => $session->url,
                 'payment_method' => 'stripe',
             ]);
+            
+            // Log activity
+            $this->logActivity('update', 'Payments', $payment, 'Generated Stripe payment link');
 
             return response()->json([
                 'success' => true,

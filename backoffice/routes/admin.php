@@ -61,6 +61,11 @@ Route::prefix('backoffice')->group(function () {
         Route::get('logs', [LogController::class, 'index'])->name('logs.index');
         Route::get('logs/{log}', [LogController::class, 'show'])->name('logs.show');
         
+        // Activity Logs
+        Route::get('activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+        Route::get('activity-logs/{activityLog}', [\App\Http\Controllers\Admin\ActivityLogController::class, 'show'])->name('activity-logs.show');
+        Route::get('activity-logs/export/data', [\App\Http\Controllers\Admin\ActivityLogController::class, 'export'])->name('activity-logs.export');
+        
         // Analytics
         Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
     });

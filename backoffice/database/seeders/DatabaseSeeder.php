@@ -26,5 +26,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PackageSeeder::class,
         ]);
+        
+        // Uncomment to backfill logs from existing data
+        // $this->call(BackfillLogsSeeder::class);
     }
 }

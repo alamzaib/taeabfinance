@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use App\LogsActivity;
 
 class PaymentController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
@@ -70,12 +72,15 @@ class PaymentController extends Controller
         ]);
 
         // Create refund request
-        $payment->refundRequests()->create([
+        $refundRequest = $payment->refundRequests()->create([
             'user_id' => $payment->user_id,
             'reason' => $validated['reason'],
             'description' => $validated['description'] ?? null,
             'status' => 'pending',
         ]);
+        
+        // Log activity
+        $this->logActivity('create', 'Refund Requests', $refundRequest);
 
         return redirect()->back()->with('success', 'Refund request created successfully.');
     }

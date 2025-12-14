@@ -351,6 +351,11 @@ return [
         ],
         ['header' => 'SYSTEM'],
         [
+            'text' => 'Activity Logs',
+            'url' => '/backoffice/activity-logs',
+            'icon' => 'fas fa-fw fa-history',
+        ],
+        [
             'text' => 'Logs',
             'url' => '/backoffice/logs',
             'icon' => 'fas fa-fw fa-file-alt',

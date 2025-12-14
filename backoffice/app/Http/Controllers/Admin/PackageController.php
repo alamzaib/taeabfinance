@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use Illuminate\Http\Request;
+use App\LogsActivity;
 
 class PackageController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
@@ -50,7 +52,10 @@ class PackageController extends Controller
                 'active' => 'boolean',
             ]);
 
-            Package::create($validated);
+            $package = Package::create($validated);
+            
+            // Log activity
+            $this->logActivity('create', 'Packages', $package, null, null, $validated);
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => true, 'message' => 'Package created successfully.']);
@@ -128,7 +133,12 @@ class PackageController extends Controller
                 'active' => 'boolean',
             ]);
 
+            $oldValues = $package->toArray();
             $package->update($validated);
+            $newValues = $package->fresh()->toArray();
+            
+            // Log activity
+            $this->logActivity('update', 'Packages', $package, null, $oldValues, $newValues);
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => true, 'message' => 'Package updated successfully.']);
@@ -150,6 +160,11 @@ class PackageController extends Controller
     public function destroy(Package $package, Request $request)
     {
         try {
+            $oldValues = $package->toArray();
+            
+            // Log activity before deletion
+            $this->logActivity('delete', 'Packages', $package, null, $oldValues, null);
+            
             $package->delete();
             
             if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {

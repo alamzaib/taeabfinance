@@ -7,9 +7,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use App\LogsActivity;
 
 class UserController extends Controller
 {
+    use LogsActivity;
     public function index(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
@@ -54,6 +56,11 @@ class UserController extends Controller
             if ($request->has('roles')) {
                 $user->assignRole($request->roles);
             }
+            
+            // Log activity
+            $userData = $user->toArray();
+            unset($userData['password']); // Don't log password
+            $this->logActivity('create', 'Users', $user, null, null, $userData);
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => true, 'message' => 'User created successfully.']);
@@ -115,6 +122,13 @@ class UserController extends Controller
                 'roles' => 'array',
             ]);
 
+            // Get old values before update
+            $oldValues = $user->toArray();
+            unset($oldValues['password']); // Don't log password
+            
+            // Track role changes
+            $oldRoles = $user->roles->pluck('name')->toArray();
+
             $user->update([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -127,6 +141,19 @@ class UserController extends Controller
             if ($request->has('roles')) {
                 $user->syncRoles($request->roles);
             }
+            
+            // Get new values after update
+            $user->refresh();
+            $newValues = $user->toArray();
+            unset($newValues['password']); // Don't log password
+            
+            // Add role information
+            $newRoles = $user->roles->pluck('name')->toArray();
+            $oldValues['roles'] = $oldRoles;
+            $newValues['roles'] = $newRoles;
+            
+            // Log activity
+            $this->logActivity('update', 'Users', $user, null, $oldValues, $newValues);
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => true, 'message' => 'User updated successfully.']);
@@ -147,6 +174,14 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        // Get old values before deletion
+        $oldValues = $user->toArray();
+        unset($oldValues['password']); // Don't log password
+        $oldValues['roles'] = $user->roles->pluck('name')->toArray();
+        
+        // Log activity before deletion
+        $this->logActivity('delete', 'Users', $user, null, $oldValues, null);
+        
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
