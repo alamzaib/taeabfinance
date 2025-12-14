@@ -151,6 +151,8 @@ class BillingController extends Controller
                 'package_name' => $payment->package ? $payment->package->name : null,
                 'transaction_id' => $payment->transaction_id,
                 'paid_at' => $payment->paid_at ? $payment->paid_at->format('Y-m-d') : null,
+                'payment_link' => $payment->payment_link,
+                'has_payment_link' => !empty($payment->payment_link),
             ];
         });
 

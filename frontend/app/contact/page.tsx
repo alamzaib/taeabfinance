@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Navigation from "@/components/Navigation";
+import Layout from "@/components/Layout";
 import { contactAPI } from "@/lib/api";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ContactPage() {
   const router = useRouter();
@@ -75,22 +75,8 @@ export default function ContactPage() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <Layout>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8 text-center">
@@ -258,7 +244,7 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
 

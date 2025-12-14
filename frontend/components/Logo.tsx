@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, memo } from "react";
 
-export default function Logo({ className = "" }: { className?: string }) {
+function LogoComponent({ className = "" }: { className?: string }) {
   const [imageError, setImageError] = useState(false);
 
   return (
@@ -38,4 +38,6 @@ export default function Logo({ className = "" }: { className?: string }) {
     </Link>
   );
 }
+
+export default memo(LogoComponent);
 

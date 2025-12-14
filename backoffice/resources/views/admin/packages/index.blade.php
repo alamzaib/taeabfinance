@@ -226,6 +226,7 @@
 @stop
 
 @section('js')
+    @stack('scripts')
     <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
     <script>
         // Initialize Material UI tooltips
@@ -315,7 +316,11 @@
                 })
                 .catch(error => {
                     console.error('Error fetching package details:', error);
-                    showToast.error('Error loading package details');
+                    if (typeof showToast !== 'undefined' && showToast && showToast.error) {
+                        showToast.error('Error loading package details');
+                    } else {
+                        alert('Error loading package details');
+                    }
                 });
         }
 
@@ -363,21 +368,37 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showToast.success(data.message || 'Package created successfully');
+                    if (typeof showToast !== 'undefined' && showToast && showToast.success) {
+                        showToast.success(data.message || 'Package created successfully');
+                    } else {
+                        alert(data.message || 'Package created successfully');
+                    }
                     $('#createPackageModal').modal('hide');
                     table.replaceData();
                     $('[data-toggle="tooltip"]').tooltip();
                 } else {
                     if (data.errors) {
-                        handleValidationErrors(data.errors);
+                        if (typeof handleValidationErrors === 'function') {
+                            handleValidationErrors(data.errors);
+                        } else {
+                            alert('Validation errors occurred');
+                        }
                     } else {
-                        showToast.error(data.message || 'Error creating package');
+                        if (typeof showToast !== 'undefined' && showToast && showToast.error) {
+                            showToast.error(data.message || 'Error creating package');
+                        } else {
+                            alert(data.message || 'Error creating package');
+                        }
                     }
                 }
             })
             .catch(error => {
                 console.error('Error creating package:', error);
-                handleAjaxError(error, 'Error creating package');
+                if (typeof handleAjaxError === 'function') {
+                    handleAjaxError(error, 'Error creating package');
+                } else {
+                    alert('Error creating package: ' + (error.message || 'Unknown error'));
+                }
             });
         }
 
@@ -422,7 +443,11 @@
             })
             .catch(error => {
                 console.error('Error fetching package for edit:', error);
-                showToast.error('Error loading package for edit');
+                if (typeof showToast !== 'undefined' && showToast && showToast.error) {
+                    showToast.error('Error loading package for edit');
+                } else {
+                    alert('Error loading package for edit');
+                }
             });
         }
 
@@ -439,22 +464,35 @@
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showToast.success(data.message || 'Package updated successfully');
+                    if (typeof showToast !== 'undefined' && showToast && showToast.success) {
+                        showToast.success(data.message || 'Package updated successfully');
+                    } else {
+                        alert(data.message || 'Package updated successfully');
+                    }
                     $('#editPackageModal').modal('hide');
                     table.replaceData();
                     $('[data-toggle="tooltip"]').tooltip();
                 } else {
                     if (data.errors) {
-                        handleValidationErrors(data.errors);
+                        if (typeof handleValidationErrors === 'function') {
+                            handleValidationErrors(data.errors);
+                        } else {
+                            alert('Validation errors occurred');
+                        }
                     } else {
-                        showToast.error(data.message || 'Error updating package');
+                        if (typeof showToast !== 'undefined' && showToast && showToast.error) {
+                            showToast.error(data.message || 'Error updating package');
+                        } else {
+                            alert(data.message || 'Error updating package');
+                        }
                     }
                 }
             })
@@ -466,26 +504,54 @@
 
         function deletePackage(id) {
             showConfirm('Are you sure you want to delete this package?', function() {
+                // Use FormData with method spoofing for DELETE (similar to PUT)
+                const formData = new FormData();
+                formData.append('_method', 'DELETE');
+                
                 fetch('/backoffice/packages/' + id, {
-                    method: 'DELETE',
+                    method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json'
-                    }
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        // If response is not ok, try to parse error
+                        return response.json().then(err => {
+                            throw { response: { data: err, status: response.status } };
+                        }).catch(() => {
+                            throw { response: { data: { message: 'Server error: ' + response.status }, status: response.status } };
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        showToast.success(data.message || 'Package deleted successfully');
+                        if (typeof showToast !== 'undefined' && showToast && showToast.success) {
+                            showToast.success(data.message || 'Package deleted successfully');
+                        } else {
+                            alert(data.message || 'Package deleted successfully');
+                        }
                         table.replaceData();
                         $('[data-toggle="tooltip"]').tooltip();
                     } else {
-                        showToast.error(data.message || 'Error deleting package');
+                        if (typeof showToast !== 'undefined' && showToast && showToast.error) {
+                            showToast.error(data.message || 'Error deleting package');
+                        } else {
+                            alert(data.message || 'Error deleting package');
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error deleting package:', error);
-                    handleAjaxError(error, 'Error deleting package');
+                    if (typeof handleAjaxError === 'function') {
+                        handleAjaxError(error, 'Error deleting package');
+                    } else {
+                        alert('Error deleting package: ' + (error.message || 'Unknown error'));
+                    }
                 });
             }, 'Delete Package', 'Delete', 'Cancel');
         }
@@ -496,4 +562,5 @@
         });
     </script>
 @stop
+
 

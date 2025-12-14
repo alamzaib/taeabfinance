@@ -40,6 +40,10 @@ Route::prefix('backoffice')->group(function () {
         Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
         Route::post('payments/{payment}/refund', [PaymentController::class, 'refund'])->name('payments.refund');
         
+        // Stripe Payment Links
+        Route::post('payments/{payment}/generate-payment-link', [\App\Http\Controllers\Admin\StripePaymentController::class, 'generatePaymentLink'])->name('payments.generate-link');
+        Route::get('payments/{payment}/payment-status', [\App\Http\Controllers\Admin\StripePaymentController::class, 'getPaymentStatus'])->name('payments.status');
+        
         // Refund Requests
         Route::get('refunds', [RefundController::class, 'index'])->name('refunds.index');
         Route::get('refunds/{refundRequest}', [RefundController::class, 'show'])->name('refunds.show');

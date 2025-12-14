@@ -44,6 +44,31 @@
                             <p><strong>Created At:</strong> <span id="paymentModalCreated"></span></p>
                         </div>
                     </div>
+                    <div class="row mt-3" id="paymentLinkSection" style="display: none;">
+                        <div class="col-12">
+                            <hr>
+                            <p><strong>Payment Link:</strong></p>
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" id="paymentModalLink" readonly>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyPaymentLink()" data-toggle="tooltip" title="Copy Link">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <a href="#" id="paymentModalLinkAnchor" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="fas fa-external-link-alt"></i> Open Payment Link
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mt-3" id="generateLinkSection">
+                        <div class="col-12">
+                            <hr>
+                            <button type="button" class="btn btn-success" id="generateLinkBtn" onclick="generatePaymentLink()">
+                                <i class="fas fa-link"></i> Generate Payment Link
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -60,9 +85,11 @@
 @stop
 
 @section('js')
+    @stack('scripts')
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
     <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
     <script>
+        const csrfToken = '{{ csrf_token() }}';
         var table = new Tabulator("#payments-table", {
             ajaxURL: "{{ route('payments.index') }}",
             ajaxConfig: "GET",
@@ -102,16 +129,45 @@
                 }},
                 {title: "Date", field: "created_at", formatter: "datetime", formatterParams: {inputFormat: "YYYY-MM-DD HH:mm:ss", outputFormat: "MM/DD/YYYY"}},
                 {
+                    title: "Payment Link",
+                    field: "has_payment_link",
+                    formatter: function(cell) {
+                        var row = cell.getRow();
+                        var data = row.getData();
+                        if (data.has_payment_link) {
+                            return '<span class="badge badge-success"><i class="fas fa-check"></i> Generated</span>';
+                        } else if (data.status === 'pending') {
+                            return '<span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>';
+                        }
+                        return '<span class="badge badge-secondary">N/A</span>';
+                    }
+                },
+                {
                     title: "Actions",
                     formatter: "html",
                     formatter: function(cell) {
-                        return '';
+                        var row = cell.getRow();
+                        var data = row.getData();
+                        var actions = '';
+                        
+                        if (data.status === 'pending' && !data.has_payment_link) {
+                            actions += '<button class="btn btn-sm btn-success" data-toggle="tooltip" data-placement="top" title="Generate Payment Link" onclick="event.stopPropagation(); generatePaymentLinkFromTable(' + data.id + ');"><i class="fas fa-link"></i></button> ';
+                        }
+                        
+                        if (data.has_payment_link) {
+                            actions += '<button class="btn btn-sm btn-info" data-toggle="tooltip" data-placement="top" title="View Payment Link" onclick="event.stopPropagation(); viewPaymentLink(' + data.id + ');"><i class="fas fa-eye"></i></button> ';
+                        }
+                        
+                        return actions;
                     }
                 }
             ],
         });
 
+        var currentPaymentId = null;
+
         function showPaymentDetails(paymentId) {
+            currentPaymentId = paymentId;
             fetch('/backoffice/payments/' + paymentId, {
                     headers: {
                         'Accept': 'application/json',
@@ -135,13 +191,77 @@
                         $('#paymentModalRefunds').text(payment.refund_requests_count || 0);
                         $('#paymentModalCreated').text(new Date(payment.created_at).toLocaleDateString());
                         
+                        // Show/hide payment link section
+                        if (payment.payment_link) {
+                            $('#paymentModalLink').val(payment.payment_link);
+                            $('#paymentModalLinkAnchor').attr('href', payment.payment_link);
+                            $('#paymentLinkSection').show();
+                            $('#generateLinkSection').hide();
+                        } else {
+                            $('#paymentLinkSection').hide();
+                            if (payment.status === 'pending') {
+                                $('#generateLinkSection').show();
+                            } else {
+                                $('#generateLinkSection').hide();
+                            }
+                        }
+                        
                         $('#paymentModal').modal('show');
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching payment details:', error);
-                    showToast.error('Error loading payment details');
+                    window.showToast.error('Error loading payment details');
                 });
+        }
+
+        function generatePaymentLink() {
+            if (!currentPaymentId) return;
+            
+            window.showConfirm('Generate a Stripe payment link for this payment?', function() {
+                fetch('/backoffice/payments/' + currentPaymentId + '/generate-payment-link', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.showToast.success(data.message || 'Payment link generated successfully');
+                        $('#paymentModalLink').val(data.data.payment_link);
+                        $('#paymentModalLinkAnchor').attr('href', data.data.payment_link);
+                        $('#paymentLinkSection').show();
+                        $('#generateLinkSection').hide();
+                        table.replaceData();
+                    } else {
+                        window.showToast.error(data.message || 'Error generating payment link');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error generating payment link:', error);
+                    window.handleAjaxError(error, 'Error generating payment link');
+                });
+            }, 'Generate Payment Link', 'Generate', 'Cancel');
+        }
+
+        function generatePaymentLinkFromTable(paymentId) {
+            currentPaymentId = paymentId;
+            generatePaymentLink();
+        }
+
+        function viewPaymentLink(paymentId) {
+            showPaymentDetails(paymentId);
+        }
+
+        function copyPaymentLink() {
+            var linkInput = document.getElementById('paymentModalLink');
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999); // For mobile devices
+            document.execCommand('copy');
+            window.showToast.success('Payment link copied to clipboard!');
         }
 
         // Initialize tooltips on table data loaded

@@ -32,7 +32,10 @@ Route::prefix('v1')->group(function () {
         // Earnings
         Route::get('/earnings', [\App\Http\Controllers\Api\V1\EarningController::class, 'index']);
         Route::get('/earnings/history', [\App\Http\Controllers\Api\V1\EarningController::class, 'history']);
-        Route::get('/earnings/export', [\App\Http\Controllers\Api\V1\EarningController::class, 'export']);
+            Route::get('/earnings/export', [\App\Http\Controllers\Api\V1\EarningController::class, 'export']);
+        });
     });
-});
+
+    // Stripe Webhook (no authentication required)
+    Route::post('/stripe/webhook', [\App\Http\Controllers\Api\V1\StripeWebhookController::class, 'handle']);
 

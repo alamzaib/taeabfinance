@@ -11,15 +11,21 @@ class PaymentController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            $payments = Payment::with(['user', 'package'])->get()->map(function ($payment) {
+            $payments = Payment::with(['user', 'package'])->orderBy('created_at', 'desc')->get()->map(function ($payment) {
                 return [
                     'id' => $payment->id,
                     'transaction_id' => $payment->transaction_id,
                     'user_name' => $payment->user->name ?? 'N/A',
+                    'user_email' => $payment->user->email ?? 'N/A',
                     'package_name' => $payment->package->name ?? 'N/A',
                     'amount' => $payment->amount,
+                    'currency' => $payment->currency,
                     'status' => $payment->status,
+                    'payment_method' => $payment->payment_method,
+                    'payment_link' => $payment->payment_link,
+                    'has_payment_link' => !empty($payment->payment_link),
                     'created_at' => $payment->created_at->format('Y-m-d H:i:s'),
+                    'paid_at' => $payment->paid_at ? $payment->paid_at->format('Y-m-d H:i:s') : null,
                 ];
             });
             return response()->json($payments);
@@ -43,9 +49,12 @@ class PaymentController extends Controller
                         'currency' => $payment->currency,
                         'status' => $payment->status,
                         'payment_method' => $payment->payment_method,
+                        'payment_link' => $payment->payment_link,
+                        'stripe_session_id' => $payment->stripe_session_id,
                         'refund_requests_count' => $payment->refundRequests->count(),
                         'created_at' => $payment->created_at->toDateTimeString(),
                         'updated_at' => $payment->updated_at->toDateTimeString(),
+                        'paid_at' => $payment->paid_at ? $payment->paid_at->toDateTimeString() : null,
                     ]
                 ]
             ]);

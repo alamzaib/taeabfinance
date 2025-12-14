@@ -147,10 +147,29 @@ class PackageController extends Controller
         }
     }
 
-    public function destroy(Package $package)
+    public function destroy(Package $package, Request $request)
     {
-        $package->delete();
-        return redirect()->route('packages.index')->with('success', 'Package deleted successfully.');
+        try {
+            $package->delete();
+            
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Package deleted successfully.'
+                ]);
+            }
+            
+            return redirect()->route('packages.index')->with('success', 'Package deleted successfully.');
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error deleting package: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('packages.index')->with('error', 'Error deleting package.');
+        }
     }
 
     public function toggleStatus(Package $package)

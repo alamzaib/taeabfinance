@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { earningsAPI } from "@/lib/api";
-import Navigation from "@/components/Navigation";
+import Layout from "@/components/Layout";
 import * as XLSX from "xlsx";
 
 interface Earning {
@@ -181,8 +181,7 @@ export default function EarningsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <Layout>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -569,6 +568,6 @@ export default function EarningsPage() {
           </>
         ) : null}
       </div>
-    </div>
+    </Layout>
   );
 }

@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authAPI } from "@/lib/api";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, refreshAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -47,6 +47,8 @@ export default function LoginPage() {
       const response = await authAPI.login(email, password);
       if (response.success && response.data.token) {
         localStorage.setItem("auth_token", response.data.token);
+        // Refresh auth context to update navigation immediately
+        await refreshAuth();
         router.push("/dashboard");
       }
     } catch (err: any) {
@@ -62,10 +64,9 @@ export default function LoginPage() {
     <div className="min-h-screen gradient-green-light flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="mb-6">
+          <div className="mb-6 flex justify-center">
             <Logo />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">Welcome Back</h2>
           <p className="mt-2 text-sm text-gray-600">
             Sign in to access your investment portfolio
           </p>

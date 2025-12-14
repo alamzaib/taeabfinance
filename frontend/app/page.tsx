@@ -1,13 +1,11 @@
 import Link from "next/link";
-import Navigation from "@/components/Navigation";
+import Layout from "@/components/Layout";
 import Logo from "@/components/Logo";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="fixed top-0 w-full z-50">
-        <Navigation />
-      </div>
+    <Layout showNavigation={true}>
+      <div className="min-h-screen bg-white">
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 gradient-green-light">
@@ -217,6 +215,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </Layout>
   );
 }

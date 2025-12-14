@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Navigation from "@/components/Navigation";
+import Layout from "@/components/Layout";
 import { earningsAPI, billingAPI } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Earning {
   id: number;
@@ -74,8 +75,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <Layout>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -301,6 +301,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }

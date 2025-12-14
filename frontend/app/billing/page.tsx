@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { billingAPI, paymentMethodAPI } from "@/lib/api";
-import Navigation from "@/components/Navigation";
+import Layout from "@/components/Layout";
 import * as XLSX from "xlsx";
 
 interface PaymentMethod {
@@ -29,6 +29,8 @@ interface Payment {
   package_name: string | null;
   transaction_id: string | null;
   paid_at: string | null;
+  payment_link?: string | null;
+  has_payment_link?: boolean;
 }
 
 interface BillingData {
@@ -335,8 +337,7 @@ export default function BillingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <Layout>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -646,6 +647,9 @@ export default function BillingPage() {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Transaction ID
                           </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -671,6 +675,23 @@ export default function BillingPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {payment.transaction_id || "N/A"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              {payment.status === "pending" && payment.has_payment_link && payment.payment_link ? (
+                                <a
+                                  href={payment.payment_link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition"
+                                >
+                                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                  </svg>
+                                  Pay Now
+                                </a>
+                              ) : payment.status === "pending" ? (
+                                <span className="text-xs text-gray-500">Waiting for payment link...</span>
+                              ) : null}
                             </td>
                           </tr>
                         ))}
@@ -1038,6 +1059,6 @@ export default function BillingPage() {
           </div>
         </div>
       )}
-    </div>
+    </Layout>
   );
 }

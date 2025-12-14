@@ -2,61 +2,34 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { authAPI } from "@/lib/api";
+import { memo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import Logo from "./Logo";
 
-export default function Navigation() {
+function NavigationComponent() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-      
-      if (!token) {
-        setIsAuthenticated(false);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await authAPI.getUser();
-        if (response.success && response.data?.user) {
-          setIsAuthenticated(true);
-          setUserName(response.data.user.name);
-        } else {
-          setIsAuthenticated(false);
-          localStorage.removeItem("auth_token");
-        }
-      } catch (error) {
-        setIsAuthenticated(false);
-        localStorage.removeItem("auth_token");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
+  const { isAuthenticated, user, loading, logout } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      await authAPI.logout();
-    } catch (error) {
-      // Ignore logout errors
-    } finally {
-      localStorage.removeItem("auth_token");
-      setIsAuthenticated(false);
-      setUserName(null);
-      router.push("/login");
-    }
+    await logout();
+    router.push("/login");
   };
 
+  // Show skeleton while loading to prevent flicker
   if (loading) {
-    return null; // Don't show navigation while checking auth
+    return (
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="w-32 h-8 bg-gray-200 animate-pulse rounded"></div>
+            <div className="flex items-center space-x-4">
+              <div className="w-20 h-4 bg-gray-200 animate-pulse rounded"></div>
+              <div className="w-20 h-4 bg-gray-200 animate-pulse rounded"></div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
   }
 
   return (
@@ -65,7 +38,7 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           <Logo />
           <div className="flex items-center space-x-4">
-            {isAuthenticated ? (
+            {isAuthenticated === true ? (
               <>
                 <Link href="/dashboard" className="text-gray-700 hover:text-primary-600 transition font-medium">
                   Dashboard
@@ -82,8 +55,8 @@ export default function Navigation() {
                 <Link href="/contact" className="text-gray-700 hover:text-primary-600 transition font-medium">
                   Contact
                 </Link>
-                {userName && (
-                  <span className="text-gray-700 text-sm hidden md:inline">Welcome, {userName}!</span>
+                {user && (
+                  <span className="text-gray-700 text-sm hidden md:inline">Welcome, {user.name}!</span>
                 )}
                 <button
                   onClick={handleLogout}
@@ -120,4 +93,6 @@ export default function Navigation() {
     </nav>
   );
 }
+
+export default memo(NavigationComponent);
 

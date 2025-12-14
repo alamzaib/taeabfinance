@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authAPI } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import Logo from "@/components/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { refreshAuth } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -44,6 +46,8 @@ export default function RegisterPage() {
       );
       if (response.success && response.data.token) {
         localStorage.setItem("auth_token", response.data.token);
+        // Refresh auth context to update navigation immediately
+        await refreshAuth();
         router.push("/dashboard");
       }
     } catch (err: any) {
